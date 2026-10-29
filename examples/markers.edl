@@ -1,0 +1,10 @@
+TITLE: SPLICE MARKERS
+FCM: NON-DROP FRAME
+
+001  AX       V     C        01:00:02:12 01:00:02:13 01:00:02:12 01:00:02:13
+* ResolveColorBlue
+* FROM CLIP NAME: n1: Check lighting
+
+002  AX       V     C        01:00:01:12 01:00:01:13 01:00:01:12 01:00:01:13
+* ResolveColorBlue
+* FROM CLIP NAME: n2: Trim pause

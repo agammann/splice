@@ -1,0 +1,4 @@
+"id","old_seconds","text","status","source_url","source_seconds","new_seconds","candidates"
+"n1","0.5","Check lighting","mapped","shot-a.mov","1/2","5/2","5/2"
+"n2","1.5","Trim pause","mapped","shot-a.mov","3/2","3/2","3/2"
+"n3","3.5","Review removed shot","deleted_or_unresolved","shot-c.mov","1/2","",""

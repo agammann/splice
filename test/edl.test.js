@@ -1,0 +1,5 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'); const {exportEdl,parseEdl}=require('../edl');
+const rows=[['id','old_seconds','text','status','source_url','source_seconds','new_seconds','candidates'],['a','0.5','light','mapped','a','1/2','5/2','5/2'],['b','3','removed','deleted_or_unresolved','','','','']];
+test('marker EDL roundtrip includes timeline start and excludes unresolved',()=>{let out=exportEdl(rows,24,86400);assert.deepEqual(parseEdl(out,24),[86460]);assert.match(out,/01:00:02:12/);assert.match(out,/a: light/);assert.doesNotMatch(out,/removed/)});
+test('rejects off-frame results and invalid rates',()=>{let off=structuredClone(rows);off[1][6]='1/100';assert.throws(()=>exportEdl(off,24,0),/not frame aligned/);assert.throws(()=>exportEdl(rows,29.97,0),/fps/)});
+test('rejects non ASCII and 24 hour overflow',()=>{let copy=structuredClone(rows);copy[1][2]='é';assert.throws(()=>exportEdl(copy,24,0),/ASCII/);assert.throws(()=>exportEdl(rows,24,24*86400),/24 hours/)});

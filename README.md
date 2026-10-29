@@ -16,7 +16,7 @@ Outputs must be new files: existing paths, including inputs, are never overwritt
 
 ## Supported subset and limits
 
-Only one flat video track, explicit clip/gap source ranges, and external media references with identical `target_url` strings are supported. A timeline with effects/retiming, transitions, nested compositions or multiple tracks is rejected. Identical media URLs must truly identify the same source: renames, proxy substitution, duplicate filenames, and shifted source origins require manual reconciliation. Frame rates are interpreted as decimal rational values in OTIO JSON, not timecode labels; drop-frame timecode and floating-point precision beyond JSON's numeric representation are unsupported. Notes are points, not ranges. This tool does not inspect media or verify whether a note still makes sense.
+Only one flat video track, explicit clip/gap source ranges, and external media references with identical `target_url` strings are supported. A timeline with track or stack source ranges (trims), effects/retiming, transitions, nested compositions or multiple tracks is rejected. Identical media URLs must truly identify the same source: renames, proxy substitution, duplicate filenames, and shifted source origins require manual reconciliation. Frame rates are interpreted as decimal rational values in OTIO JSON, not timecode labels; drop-frame timecode and floating-point precision beyond JSON's numeric representation are unsupported. Notes are points, not ranges. This tool does not inspect media or verify whether a note still makes sense.
 
 The optional EDL is a candidate DaVinci Resolve timeline-marker import: select the timeline in the Media Pool, then Timelines > Import > Timeline Markers from EDL. Set FPS to 24, 25, or 30 integer non-drop frames and START_FRAME to the new timeline start timecode expressed in frames (86400 means 01:00:00:00 at 24 fps). Only uniquely mapped, exactly frame-aligned notes are exported; unresolved notes stay in the receipt. Export aborts on fractional frames, unsupported rates, non-ASCII text, more than 999 markers, or a 24-hour timecode overflow. The EDL parser test checks its generated frame numbers, but **no actual Resolve import has been tested**, and compatibility including marker text is unverified. Inspect all imported markers before use. No AAF, visual matching, complex retiming, audio or editor integration is provided. It is a standalone clean-room prototype; no code from the inspirational projects is included. Back up work and verify the receipt against the edit.
 
@@ -25,5 +25,7 @@ The optional EDL is a candidate DaVinci Resolve timeline-marker import: select t
 [FreeFrame](https://github.com/Techiebutler/freeframe) is a media-review platform; [OpenTimelineIO](https://github.com/AcademySoftwareFoundation/OpenTimelineIO) defines timeline interchange; [ResolveConformTools](https://github.com/polisvfx/ResolveConformTools) supplies Resolve conform scripts; and commercial [Matchbox](https://www.thecargocult.nz/products/matchbox/) provides broader change management and reconforming. Splice explores a narrower portable notes receipt, not feature parity or a claim of uniqueness. This prototype reads a restricted OTIO JSON subset itself and does not bundle OpenTimelineIO.
 
 MIT licensed; see LICENSE.
+
+
 
 

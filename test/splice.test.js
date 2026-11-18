@@ -10,3 +10,44 @@ test('decimal note just before a cut stays with the preceding clip',()=>{let r=r
 test('track and stack trims rejected in either cut before mapping boundary notes',()=>{for(const side of [0,1])for(const level of ['track','stack']){let args=setup([clip('a',0,48)],[clip('a',0,48)],'id,seconds,text\nx,0.5,inside trimmed range\ny,1.5,outside trimmed range\n');let t=JSON.parse(fs.readFileSync(args[side],'utf8'));let trim={OTIO_SCHEMA:'TimeRange.1',start_time:rt(24),duration:rt(24)};if(level==='track')t.tracks.children[0].source_range=trim;else t.tracks.source_range=trim;fs.writeFileSync(args[side],JSON.stringify(t));assert.throws(()=>run(...args),/track and stack trims unsupported/);assert.equal(fs.existsSync(args[3]),false)}});
 test('explicit null composition ranges remain supported with exact half-open boundaries',()=>{let args=setup([clip('a',0,24),clip('b',0,24)],[clip('a',0,24),clip('b',0,24)],'id,seconds,text\na,0.5,inside\nb,1,cut\nc,2,end\n');for(let i of [0,1]){let t=JSON.parse(fs.readFileSync(args[i],'utf8'));t.tracks.source_range=null;t.tracks.children[0].source_range=null;fs.writeFileSync(args[i],JSON.stringify(t))}let r=run(...args);assert.equal(r[1][4],'a');assert.equal(r[2][4],'b');assert.equal(r[3][3],'old_gap_or_outside')});
 
+test('uses the active OTIO media reference and supports legacy references', () => {
+  const modern = clip('unused-edit-name', 0, 24);
+  modern.media_references = {
+    preview: {OTIO_SCHEMA:'ExternalReference.1', target_url:'preview.mov'},
+    master: {OTIO_SCHEMA:'ExternalReference.1', target_url:'camera.mov'},
+  };
+  modern.active_media_reference_key = 'master';
+  delete modern.media_reference;
+  const rows = run(...setup([modern], [clip('camera.mov',0,24)], 'id,seconds,text\na,0.5,Check cut\n'));
+  assert.deepEqual(rows[1].slice(3,7), ['mapped','camera.mov','1/2','1/2']);
+});
+
+test('rejects a missing active reference without falling back to a legacy value', () => {
+  const modern = clip('camera.mov', 0, 24);
+  modern.media_references = {master: modern.media_reference};
+  modern.active_media_reference_key = 'inactive';
+  const args = setup([modern], [clip('camera.mov',0,24)], 'id,seconds,text\na,0.5,Check cut\n');
+  assert.throws(() => run(...args), /active media reference/);
+  assert.equal(fs.existsSync(args[3]), false);
+});
+
+test('rejects a non-string external source identity', () => {
+  const args = setup([clip(23,0,24)], [clip(23,0,24)], 'id,seconds,text\na,0.5,Check cut\n');
+  assert.throws(() => run(...args), /target_url must be a nonempty string/);
+  assert.equal(fs.existsSync(args[3]), false);
+});
+
+test('accepts a leading UTF-8 BOM on timelines and notes', () => {
+  const args = setup([clip('a',0,24)], [clip('a',0,24)], 'id,seconds,text\r\na,0.5,Check cut\r\n');
+  for (const input of args.slice(0,3)) fs.writeFileSync(input, '\uFEFF' + fs.readFileSync(input,'utf8'));
+  const rows = run(...args);
+  assert.equal(rows[1][3], 'mapped');
+  assert.equal(rows[1][6], '1/2');
+});
+
+test('rejects a single quoted cell in place of the three-column header', () => {
+  const args = setup([clip('a',0,24)], [clip('a',0,24)], '"id,seconds,text"\na,0.5,Check cut\n');
+  assert.throws(() => run(...args), /CSV header/);
+  assert.equal(fs.existsSync(args[3]), false);
+});
+
